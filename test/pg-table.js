@@ -1,9 +1,10 @@
+const { describe, it } = require('node:test');
 const assert= require("assert")
 const dbtabla = require('dbtabla')
 const connect = require('../pg-table.js')
- describe("Test de la clase dbHelpers",()=>
- {
-    const pg= new connect(//"pgsql:host=localhost;port=5432;dbname=test_pg_tab;user=postgres;password:EVER2310;"
+describe("Test de la clase pg-table",()=>
+{
+    const pg= new connect(
     {
         host     : 'localhost',
         password:'EVER2310',
@@ -16,8 +17,7 @@ const connect = require('../pg-table.js')
         assert.equal(typeof pg.tabla,"function")
         assert.equal(typeof pg.query,"function")
         assert.equal(typeof pg.connect,"function")
-        
-        assert.equal(typeof pg.__keysInTable,"function")
+        assert.equal(typeof pg._keysInTable,"function")
         assert.equal(typeof pg.end,"function")
     })
     

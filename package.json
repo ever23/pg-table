@@ -1,14 +1,14 @@
 {
   "name": "pg-table",
-  "version": "1.0.1",
-  "description": "interface de alto nivel para consultas posgresql",
-  "main": "index.js",
+  "version": "2.0.0",
+  "description": "interface de alto nivel para postresql",
+  "main": "pg-table.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ever23/pg-table.git"
   },
   "scripts": {
-    "test": "mocha ./test/index.js",
+    "test": "node --test ./test/index.js",
     "lint": "eslint ./pg-table.js ./lib"
   },
   "keywords": [
@@ -19,11 +19,16 @@
   "author": "enyerverfranco@gmail.com",
   "license": "MIT",
   "devDependencies": {
-    "eslint": "^5.9.0",
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.1.0",
+    "globals": "^17.4.0",
     "mocha": "^5.2.0"
   },
   "dependencies": {
-    "pg": "^7.7.0",
-    "dbtabla":"^0.8.8"
+    "dbtabla": "^2.1.2",
+    "pg": "^7.7.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

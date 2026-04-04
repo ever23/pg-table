@@ -1,8 +1,9 @@
+const { describe, it } = require('node:test');
 const assert= require("assert")
 const dbtabla = require("dbtabla")
 const connect = require('../pg-table.js')
 const pgResult = require("../lib/pgResult")
-const dbRow = require("dbtabla/lib/dbRow")
+const { dbRow } = require("dbtabla")
 const path = require('path')
 function createAndInsert(callback)
 {
@@ -223,7 +224,7 @@ describe("Test de la clase pg-table :tabla",()=>
             assert.ok(test3 instanceof dbtabla,"debe retornar un objeto dbtabla")
             return test3.select().then(d=>
             {
-                test3.__connection.end()
+                test3._connection.end()
                 assert.ok(d instanceof Array,"se debe obtener un array")
             })
 
@@ -258,7 +259,7 @@ describe("Test de la clase pg-table :tabla",()=>
             assert.ok(test4 instanceof dbtabla,"debe retornar un objeto dbtabla")
             return test4.select().then(d=>
             {
-                test4.__connection.end()
+                test4._connection.end()
                 assert.ok(d instanceof Array,"se debe obtener un array")
             })
 
