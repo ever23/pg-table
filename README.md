@@ -12,6 +12,7 @@
 - [Introducción](#introducción)
 - [Uso](#uso)
 - [Documentación del API](#documentación-del-api)
+- [Asistencia para IA](#asistencia-para-ia)
 
 ## Instalación
 
@@ -118,6 +119,14 @@ Ejecuta SQL nativo directamente para casos especiales o funciones avanzadas de P
 
 ### `postgreSqlTable#end()`
 Finaliza todas las conexiones con el servidor PostgreSQL.
+
+---
+
+## Asistencia para IA
+
+Este proyecto incluye una **Skill de IA** diseñada para ayudar a agentes y asistentes inteligentes a entender y utilizar la librería de forma óptima, siguiendo los patrones de Active Record y gestión de modelos en PostgreSQL.
+
+Puedes encontrar las directrices detalladas en: [.agents/skills/pg-table/SKILL.md](.agents/skills/pg-table/SKILL.md)
 
 [npm-image]: https://img.shields.io/npm/v/pg-table.svg
 [npm-url]: https://npmjs.org/package/pg-table
