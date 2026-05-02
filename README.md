@@ -4,19 +4,27 @@
 [![NPM Downloads][downloads-image]][downloads-url]
 [![Node.js Version][node-version-image]][node-version-url]
 
-**pg-table** es el módulo final y listo para producción para interactuar con bases de datos PostgreSQL en Node.js. Al integrar de manera fluida las capacidades de **dbtabla** (la capa de abstracción de base de datos) y **tabla-model** (la definición de esquemas), proporciona al desarrollador una interfaz robusta y escalable para la gestión de datos.
+**pg-table** es una interfaz de alto nivel diseñada para interactuar con bases de datos PostgreSQL en Node.js de forma eficiente. Basada en el patrón **Active Record**, permite abstraer la complejidad de PostgreSQL y gestionar tus datos mediante objetos de JavaScript, manteniendo la flexibilidad y el rendimiento.
 
-## Tabla de contenidos
+## 🚀 Características Principales
 
-- [Instalación](#instalación)
-- [Introducción](#introducción)
-- [Uso](#uso)
-- [Documentación del API](#documentación-del-api)
-- [Asistencia para IA](#asistencia-para-ia)
+*   **Abstracción de Alto Nivel**: CRUD completo sin escribir SQL manual.
+*   **Patrón Active Record**: Los resultados de las consultas son objetos inteligentes con métodos `.update()` y `.delete()`.
+*   **Gestión de Esquemas Inteligente**: Extracción automática de metadatos y sincronización con modelos de `tabla-model`.
+*   **Fluent Query Builder**: Soporte para consultas complejas, Joins dinámicos y búsquedas avanzadas.
+*   **API Consistente**: Interfaz idéntica a `mysql-tab` y `sqlite3-tab`, facilitando el desarrollo multiplataforma.
 
-## Instalación
+## 📚 Ecosistema dbtabla
 
-`pg-table` es el paquete principal que necesitas para interactuar con PostgreSQL de forma eficiente:
+Este paquete forma parte de un ecosistema modular. También puedes utilizar:
+
+*   **[tabla-model](https://github.com/ever23/tabla-model)**: El motor de definición de esquemas (requerido para definir modelos).
+*   **[mysql-tab](https://github.com/ever23/mysql-tab)**: Si necesitas soporte para MySQL/MariaDB.
+*   **[sqlite3-tab](https://github.com/ever23/sqlite3-tab)**: Si necesitas soporte para SQLite3.
+
+---
+
+## 📦 Instalación
 
 ```sh
 $ npm install pg-table
@@ -24,109 +32,122 @@ $ npm install pg-table
 
 ---
 
-## Introducción
+## 🛠️ Inicio Rápido
 
-`pg-table` actúa como la interfaz definitiva que simplifica la interacción con PostgreSQL, ocultando la complejidad del driver nativo `pg` y las abstracciones subyacentes. Internamente, utiliza un ecosistema diseñado para maximizar la productividad y escalabilidad:
+### 1. Conexión y Configuración
+Instancia la conexión pasando un objeto de configuración estándar de `pg` (PostgreSQL Client).
 
-1.  **Capa de Datos de Alto Nivel**: Utiliza las abstracciones de `dbtabla` para realizar operaciones CRUD potentes (Select, Insert, Update, Delete) sin escribir consultas SQL manuales.
-2.  **Gestión de Esquemas Automática**: Al integrar `tabla-model`, tus tablas se crean y se inicializan automáticamente al arrancar la aplicación basándose en tus definiciones de modelos.
-3.  **Filas Inteligentes**: Los resultados de tus consultas son objetos interactivos que permiten actualizar o eliminar registros directamente desde JavaScript.
+```javascript
+const PostgreSQL = require('pg-table');
 
-### Beneficios clave:
-*   **Velocidad de Desarrollo**: Implementa búsquedas complejas con Joins y filtros dinámicos en segundos.
-*   **Agnosticismo Sintáctico**: Olvídate de los detalles de la sintaxis SQL específica de PostgreSQL para tareas comunes.
-*   **Integridad de Datos**: Manejo profesional de tipos de datos y relaciones de claves foráneas.
-
----
-
-## Uso
-
-Para empezar, solo necesitas configurar la conexión y definir tus modelos. `pg-table` se encargará de gestionar el pool de conexiones y garantizar que tus datos se guarden correctamente.
-
-[Más documentación sobre dbTabla..](https://github.com/ever23/dbtabla#dbtabla-1)
-
-### Ejemplo de uso básico:
-```js
-const Postgre = require("pg-table");
-
-// Conexión estándar
-let db = new Postgre({
+const db = new PostgreSQL({
     host: 'localhost',
     user: 'postgres',
-    password: 'password',
-    database: 'mi_base_de_datos'
+    password: 'secretpassword',
+    database: 'mi_empresa',
+    port: 5432
 });
-
-let tabla = db.tabla("clientes");
-
-// Inserción directa sin preocuparte por la formación de sentencias SQL
-tabla.insert({ nombre: "Juan Pérez", empresa: "TechCorp" })
-    .then(res => console.log("Cliente guardado:", res))
-    .catch(err => console.error("Error:", err));
 ```
 
-### El flujo recomendado (Model-Driven)
-Define tus esquemas en archivos `.js` independientes y deja que `pg-table` orqueste la base de datos PostgreSQL por ti.
+### 2. Definición de Modelos
+Utiliza `tabla-model` para definir tus esquemas.
 
-```js
-// ./model/cliente.js
-const Model = require("tabla-model");
+```javascript
+// model/Usuario.js
+const Model = require('tabla-model');
 
-module.exports = new Model("clientes", {
-    colums: [ 
-        { name: "id", type: "serial", primary: true }, // Notación específica de PostgreSQL
-        { name: "nombre", type: "varchar(100)", defaultNull: false },
-        { name: "empresa", type: "varchar(100)" }
+module.exports = new Model('usuarios', {
+    colums: [
+        { name: 'id', type: 'serial', primary: true },
+        { name: 'nombre', type: 'varchar(100)' },
+        { name: 'email', type: 'varchar(100)', unique: true }
     ]
 });
 ```
 
-#### Integración en el Servidor:
-```js
-const Postgre = require("pg-table");
-const path = require("path");
-
-const db = new Postgre({ /* config */ });
-
-// Carga global: pg-table leerá tus modelos y creará las tablas automáticamente
-db.pathModels(path.join(__dirname, "model"));
-
-// Consultar y manipular filas como objetos interactivos
-db.tabla("clientes").select({ nombre: "Juan Pérez" }).then(async (rows) => {
-    if (rows.length > 0) {
-        let row = rows[0];
-        row.nombre = "Juan Pérez Actualizado";
-        await row.update(); // pg-table genera el SQL de actualización automáticamente
-    }
-});
+Registra tus modelos:
+```javascript
+const path = require('path');
+db.pathModels(path.join(__dirname, 'model'));
 ```
 
 ---
 
-## Documentación del API
+## 📖 Guía de Uso: Operaciones de Tabla
 
-### `postgreSqlTable#constructor(config)`
-*   `config {object}`: Configuración estándar del driver `pg` o instancia activa de `Client`.
+Obtén una instancia de la tabla:
+```javascript
+const usuarios = db.tabla('usuarios');
+```
 
-### `postgreSqlTable#tabla(tabla, [callback], [verify])`
-Estructura y retorna un objeto `dbTabla` (abstracción de alto nivel).
+### Inserción de Datos
+```javascript
+// Inserción por objeto
+await usuarios.insert({ nombre: 'Antigravity', email: 'ai@dev.com' });
+```
 
-### `postgreSqlTable#addModel(model)` / `postgreSqlTable#pathModels(path)`
-Métodos para integrar esquemas de `tabla-model` de forma masiva o individual. Especialmente útil para la creación automática de tablas en esquemas PostgreSQL.
+### Consultas (Select)
+El método `.select()` es polimórfico y potente.
 
-### `postgreSqlTable#query(sql)`
-Ejecuta SQL nativo directamente para casos especiales o funciones avanzadas de PG.
+```javascript
+// 1. Selección con filtros
+const todos = await usuarios.select("id > 10");
 
-### `postgreSqlTable#end()`
-Finaliza todas las conexiones con el servidor PostgreSQL.
+// 2. Selección con Joins Dinámicos
+// Prefijos: '>' Right Join, '<' Left Join, '=' Inner Join
+const conPerfiles = await usuarios.select(
+    ["u.nombre", "p.bio"], 
+    { "<perfiles": "u.id = p.id_usuario" }, 
+    "u.estado = 'activo'"
+);
+
+// 3. Búsqueda por ID
+const user = await usuarios.selectById(1);
+```
+
+### Actualización y Borrado
+```javascript
+// Actualización masiva o filtrada con cláusula string
+await usuarios.update({ nombre: 'Editado' }, "id = 1");
+
+// Actualización por ID (más directo)
+await usuarios.updateById({ nombre: 'Nuevo' }, 1);
+
+// Borrado
+await usuarios.delete("id = 5");
+
+// Borrado por ID
+await usuarios.deleteById(5);
+```
 
 ---
 
-## Asistencia para IA
+## 💎 El Poder de Active Record (dbRow)
 
-Este proyecto incluye una **Skill de IA** diseñada para ayudar a agentes y asistentes inteligentes a entender y utilizar la librería de forma óptima, siguiendo los patrones de Active Record y gestión de modelos en PostgreSQL.
+Los resultados devueltos son instancias de `dbRow`, lo que permite modificar datos directamente sobre el objeto.
 
-Puedes encontrar las directrices detalladas en: [.agents/skills/pg-table/SKILL.md](.agents/skills/pg-table/SKILL.md)
+```javascript
+const user = await usuarios.selectOne("id = 1");
+
+if (user) {
+    user.nombre = "Nuevo Nombre";
+    await user.update(); // Genera y ejecuta el UPDATE SQL automáticamente
+    
+    // O si deseas eliminarlo
+    // await user.delete();
+}
+```
+
+---
+
+## 🧪 Pruebas
+Para ejecutar los tests del proyecto:
+```sh
+$ npm test
+```
+
+## 📄 Licencia
+Este proyecto está bajo la Licencia MIT.
 
 [npm-image]: https://img.shields.io/npm/v/pg-table.svg
 [npm-url]: https://npmjs.org/package/pg-table

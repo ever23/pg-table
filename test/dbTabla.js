@@ -12,9 +12,9 @@ function createAndInsert(callback)
     {
         const pg= new connect({
                 host     : 'localhost',
-                password:'EVER2310',
+                password : 'secret',
                 user     : 'postgres',
-                database :'test_pg_tab'
+                database :'test_db'
             })
         let test1=pg.tabla('test1')
         test1.insert(null,"text",12,"text2").then(ok=>
@@ -37,9 +37,9 @@ describe("Test de la clase pg-table :tabla",()=>
             const pg= new connect(//"pgsql:host=localhost;port=5432;dbname=test_pg_tab;user=postgres;password:EVER2310;"
             {
                 host     : 'localhost',
-                password:'EVER2310',
+                password : 'secret',
                 user     : 'postgres',
-                database :'test_pg_tab'
+                database :'test_db'
             })
             pg.end()
             resolve(pg.tabla('test1'))
@@ -57,9 +57,9 @@ describe("Test de la clase pg-table :tabla",()=>
         {
             const pg= new connect({
                 host     : 'localhost',
-                password:'EVER2310',
+                password : 'secret',
                 user     : 'postgres',
-                database :'test_pg_tab'
+                database :'test_db'
             })
             pg.query("create table IF NOT EXISTS \"test1\" (\"id\" serial not null ,\"row1\" text default 'ever',\"row2\" int not null,\"row3\" text null,primary key (\"id\"))")
                 .then(ok=>
@@ -93,9 +93,9 @@ describe("Test de la clase pg-table :tabla",()=>
         {
             const pg= new connect({
                 host     : 'localhost',
-                password:'EVER2310',
+                password : 'secret',
                 user     : 'postgres',
-                database :'test_pg_tab'
+                database :'test_db'
             })
             let test1=pg.tabla('test1')
            
@@ -198,27 +198,23 @@ describe("Test de la clase pg-table :tabla",()=>
         {
             const pg= new connect({
                 host     : 'localhost',
-                password:'EVER2310',
+                password : 'secret',
                 user     : 'postgres',
-                database :'test_pg_tab'
+                database :'test_db'
             })
-            pg.pathModels(path.dirname(__filename)+"/modelo")
-            pg.query("drop table if exists test3;drop table if exists test4;")
-                .then(d=>
-                {
-                    
-                    pg.tabla('test3',(tab,e)=>
-                    {
-                        if(tab===null)
-                        {
-                            pg.end()
-                            reject(e)
-                        }
-                        else
+            pg.pathModels(path.dirname(__filename) + "/modelo")
+            pg.query("drop table if exists test3 cascade").then(() => {
+                return pg.query("drop table if exists test4 cascade")
+            }).then(d => {
+                pg.tabla('test3', (tab, e) => {
+                    if (tab === null) {
+                        pg.end()
+                        reject(e || new Error("Fallo al cargar modelo test3"))
+                    }
+                    else
                         resolve(tab)
-                    },true)
-                  
-                }).catch(reject)
+                }, true)
+            }).catch(reject)
         })).then(test3=>
         {
             assert.ok(test3 instanceof dbtabla,"debe retornar un objeto dbtabla")
@@ -236,24 +232,22 @@ describe("Test de la clase pg-table :tabla",()=>
         {
             const pg= new connect({
                 host     : 'localhost',
-                password:'EVER2310',
+                password : 'secret',
                 user     : 'postgres',
-                database :'test_pg_tab'
+                database :'test_db'
             })
             pg.pathModels(path.dirname(__filename)+"/modelo")
 
-            
-            pg.tabla('test4',(tab,e)=>
-            {
-                
-                if(tab===null)
-                {
-                    pg.end()
-                    reject(e)
-                }
-                else
-                    resolve(tab)
-            },true)
+            pg.query("drop table if exists test4 cascade").then(() => {
+                pg.tabla('test4', (tab, e) => {
+                    if (tab === null) {
+                        pg.end()
+                        reject(e || new Error("Fallo al cargar modelo test4"))
+                    }
+                    else
+                        resolve(tab)
+                }, true)
+            }).catch(reject)
         })).then(test4=>
         {
             assert.ok(test4 instanceof dbtabla,"debe retornar un objeto dbtabla")
@@ -263,6 +257,64 @@ describe("Test de la clase pg-table :tabla",()=>
                 assert.ok(d instanceof Array,"se debe obtener un array")
             })
 
+        })
+    })
+
+    it('trasnsaciones con promesas commit', () => {
+        return (new Promise((resolve, reject) => {
+            const pg = new connect({
+                host: 'localhost',
+                password: 'secret',
+                user: 'postgres',
+                database: 'test_db'
+            })
+            pg.pathModels(path.dirname(__filename) + "/modelo")
+            let test3 = pg.tabla("test3"),
+                test4 = pg.tabla("test4")
+            pg.beginTransaction().then(async () => {
+                let ok4 = await test4.insert(null, "commit", 12, "2026-05-02")
+                if (ok4.error) throw ok4
+                let ok3 = await test3.insert(null, "commit", ok4.id_key2, "text2")
+                if (ok3.error) throw ok3
+                await pg.commit()
+                pg.end()
+                resolve(ok3)
+            }).catch(e => {
+                pg.rollback()
+                pg.end()
+                reject(e)
+            })
+        })).then(ok => {
+            assert.equal(typeof ok, "object")
+        })
+    })
+
+    it('trasnsaciones con promesas rollback', () => {
+        return (new Promise((resolve, reject) => {
+            const pg = new connect({
+                host: 'localhost',
+                password: 'secret',
+                user: 'postgres',
+                database: 'test_db'
+            })
+            pg.pathModels(path.dirname(__filename) + "/modelo")
+            let test3 = pg.tabla("test3"),
+                test4 = pg.tabla("test4")
+            pg.beginTransaction().then(async () => {
+                let ok4 = await test4.insert(null, "rollback", 12, "2026-05-02")
+                if (ok4.error) throw ok4
+                let ok3 = await test3.insert(null, "rollback", 34, "text2")
+                if (ok3.error) throw ok3
+                await pg.rollback()
+                pg.end()
+                resolve({ rollback: true })
+            }).catch(e => {
+                pg.rollback()
+                pg.end()
+                resolve(e)
+            })
+        })).then(ok => {
+            assert.equal(typeof ok, "object")
         })
     })
 })

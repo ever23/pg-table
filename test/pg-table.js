@@ -7,9 +7,9 @@ describe("Test de la clase pg-table",()=>
     const pg= new connect(
     {
         host     : 'localhost',
-        password:'EVER2310',
+        password : 'secret',
         user     : 'postgres',
-        database :'test_pg_tab'
+        database :'test_db'
     },false)
    
     it('verificacion de metodos',()=>
