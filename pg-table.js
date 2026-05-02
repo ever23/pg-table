@@ -111,10 +111,10 @@ class postgreSqlTable extends connect {
             connection: this,
             callback: t => typeof callback === "function" ? callback(t) : null,
             config: this.helpersConf()
-        }, typeof callback === "function" && verify)
+        }, verify)
     }
 
-    /**
+    /**..
      * Conecta con la base de datos (Principalmente para compatibilidad).
      * @param {function} callback - Función que se ejecutará al conectar.
      */
