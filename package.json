@@ -3,6 +3,7 @@
   "version": "2.1.3",
   "description": "Interfaz de alto nivel para PostgreSQL",
   "main": "pg-table.js",
+  "types": "pg-table.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ever23/pg-table.git"
