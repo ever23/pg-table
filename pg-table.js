@@ -94,6 +94,38 @@ class postgreSqlTable extends connect {
         }
     }
 
+    async _acquireDedicatedConnection() {
+        return new Promise((resolve, reject) => {
+            if (typeof this.connection.connect !== 'function') {
+                return resolve(this.connection);
+            }
+            this.connection.connect((err, client, release) => {
+                if (err) return reject(err);
+                client.release = release;
+                resolve(client);
+            });
+        });
+    }
+
+    async _releaseDedicatedConnection(client) {
+        if (client && typeof client.release === 'function') {
+            client.release();
+        }
+    }
+
+    async _queryOnConnection(client, query) {
+        this.lastSql = query;
+        try {
+            const result = await client.query(query);
+            if (result && result.rows) {
+                return new pgResult(this, result);
+            }
+            return result;
+        } catch (error) {
+            throw error;
+        }
+    }
+
     /**
      * Construye un objeto dbTabla asociado al nombre de la tabla.
      * @param {string} tabla - Nombre de la tabla.
