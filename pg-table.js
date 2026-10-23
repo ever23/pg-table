@@ -115,15 +115,17 @@ class postgreSqlTable extends connect {
 
     async _queryOnConnection(client, query) {
         this.lastSql = query;
-        try {
-            const result = await client.query(query);
-            if (result && result.rows) {
-                return new pgResult(this, result);
+        return this._executeWithTiming(query, async () => {
+            try {
+                const result = await client.query(query);
+                if (result && result.rows) {
+                    return new pgResult(this, result);
+                }
+                return result;
+            } catch (error) {
+                throw error;
             }
-            return result;
-        } catch (error) {
-            throw error;
-        }
+        });
     }
 
     /**
@@ -165,17 +167,19 @@ class postgreSqlTable extends connect {
      */
     async query(query) {
         this.lastSql = query;
-        // Si hay una transacción activa, usamos ese cliente. Si no, usamos el pool.
-        const runner = this._transactionClient || this.connection;
-        try {
-            const result = await runner.query(query);
-            if (result && result.rows) {
-                return new pgResult(this, result);
+        return this._executeWithTiming(query, async () => {
+            // Si hay una transacción activa, usamos ese cliente. Si no, usamos el pool.
+            const runner = this._transactionClient || this.connection;
+            try {
+                const result = await runner.query(query);
+                if (result && result.rows) {
+                    return new pgResult(this, result);
+                }
+                return result;
+            } catch (error) {
+                throw error;
             }
-            return result;
-        } catch (error) {
-            throw error;
-        }
+        });
     }
 
     /**
