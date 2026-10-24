@@ -1,6 +1,6 @@
 {
   "name": "pg-table",
-  "version": "2.2.0-beta.0",
+  "version": "2.2.0-beta.1",
   "description": "Interfaz de alto nivel para PostgreSQL",
   "main": "pg-table.js",
   "types": "pg-table.d.ts",
@@ -26,7 +26,7 @@
     "mocha": "^5.2.0"
   },
   "dependencies": {
-    "dbtabla": "^2.3.0-beta.0",
+    "dbtabla": "^2.3.0-beta.1",
     "pg": "^8.11.0"
   },
   "engines": {
